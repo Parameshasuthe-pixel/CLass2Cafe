@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-CORS
+APScheduler
+python-dotenv
+qrcode
+Pillow
+Twilio
+Werkzeug

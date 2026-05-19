@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crowd</title>
+</head>
+<body>
+
+<h1>Crowd Status</h1>
+
+{% for c in crowd %}
+<p>
+{{ c.time_slot }} - {{ c.crowd_percentage }}%
+</p>
+{% endfor %}
+
+</body>
+</html>

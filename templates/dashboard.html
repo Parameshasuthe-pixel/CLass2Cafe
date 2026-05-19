@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>Class2Cafe Dashboard</h1>
+
+<h2>Orders</h2>
+
+{% for order in orders %}
+<p>
+Order ID: {{ order.order_id }} |
+Status: {{ order.status }}
+</p>
+{% endfor %}
+
+</body>
+</html>
