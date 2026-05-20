@@ -22,115 +22,73 @@ def polite_end():
         "Visit us again soon 😊"
     )
 
+
 def detect_intent(msg):
     return ask_ai(msg)
 
-# def detect_intent(msg):
 
-#     msg = msg.lower()
+def get_cart_summary(cart):
+    if not cart:
+        return "🛒 Cart is empty."
+    lines = []
+    total = 0
+    for item in cart:
+        subtotal = item["price"] * item["qty"]
+        total += subtotal
+        lines.append(f"• {item['item']} × {item['qty']} = ₹{subtotal}")
+    lines.append(f"\n💰 *Total: ₹{total}*")
+    return "\n".join(lines)
 
-#     # greetings
-#     if any(word in msg for word in [
-#         "hi", "hello", "hey", "bro", "dude"
-#     ]):
-#         return "greeting"
 
-#     # menu
-#     elif any(word in msg for word in [
-#         "menu", "hungry", "food", "eat"
-#     ]):
-#         return "menu"
-
-#     # coffee
-#     elif any(word in msg for word in [
-#         "coffee", "tea", "drink"
-#     ]):
-#         return "coffee"
-
-#     # sandwich
-#     elif "sandwich" in msg:
-#         return "sandwich"
-
-#     # samosa
-#     elif "samosa" in msg:
-#         return "samosa"
-
-#     # crowd
-#     elif any(word in msg for word in [
-#         "crowd", "busy", "rush", "waiting"
-#     ]):
-#         return "crowd"
-
-#     # cancel
-#     elif "cancel" in msg:
-#         return "cancel"
-
-#     # track
-#     elif any(word in msg for word in [
-#         "track", "status"
-#     ]):
-#         return "track"
-
-#     # feedback
-#     elif any(word in msg for word in [
-#         "feedback", "suggestion"
-#     ]):
-#         return "feedback"
-
-#     # recommend
-#     elif any(word in msg for word in [
-#         "recommend", "suggest"
-#     ]):
-#         return "recommend"
-
-#     return "unknown"
+def get_cart_total(cart):
+    return sum(item["price"] * item["qty"] for item in cart)
 
 
 def process_message(phone, msg):
 
     msg = msg.strip()
 
-    intent = detect_intent(msg)
-
     # NEW USER
     if phone not in users:
-
         users[phone] = {
             "step": "menu",
             "name": "Customer",
+            "cart": [],           # multiple items stored here
             "current_order": {},
             "orders": []
         }
 
     user = users[phone]
 
-    # GREETING
-    if intent == "greeting":
+    intent = detect_intent(msg)
 
+    # ─── GREETING (always) ───────────────────────────────────────
+    if intent == "greeting":
+        user["step"] = "menu"
+        user["cart"] = []
         return (
             "👋 Hey! Welcome to *Class2Cafe* 😊\n\n"
-            "How can I help you today?"
+            "How can I help you today?\n\n"
+            "Try:\n"
+            "• Show menu\n"
+            "• I want coffee\n"
+            "• Is cafeteria busy?"
         )
 
-    # MAIN MENU
+    # ─── MAIN MENU STEP ──────────────────────────────────────────
     if user["step"] == "menu":
 
-        # MENU
         if intent == "menu":
-
             user["step"] = "food"
-
             return (
-                "🍽️ Today's Menu\n\n"
+                "🍽️ *Today's Menu*\n\n"
                 "1️⃣ Samosa — ₹20\n"
                 "2️⃣ Sandwich — ₹45\n"
                 "3️⃣ Filter Coffee — ₹25\n\n"
                 "Reply with item name or number 😊"
             )
 
-        # CROWD
         elif intent == "crowd":
-
             return (
                 "🟡 Cafeteria is moderately crowded.\n\n"
                 "⏰ Average waiting time: 15–20 mins\n\n"
@@ -138,115 +96,51 @@ def process_message(phone, msg):
                 + polite_end()
             )
 
-        # TRACK
         elif intent == "track":
-
             if not user["orders"]:
-
-                return (
-                    "📭 No active orders found."
-                    + polite_end()
-                )
-
+                return "📭 No active orders found." + polite_end()
             last = user["orders"][-1]
-
             return (
                 f"🧾 Order ID: {last['order_id']}\n\n"
-                f"🍽️ {last['item']} × {last['qty']}\n\n"
+                f"🍽️ Items:\n{get_cart_summary(last['cart'])}\n\n"
                 "🟡 Your order is being prepared 😊"
                 + polite_end()
             )
 
-        # CANCEL
         elif intent == "cancel":
-
             if not user["orders"]:
-
-                return (
-                    "❌ No active orders available."
-                    + polite_end()
-                )
-
+                return "❌ No active orders available." + polite_end()
             last = user["orders"].pop()
-
             return (
                 f"✅ Order {last['order_id']} cancelled successfully.\n\n"
                 "💰 Refund will be processed shortly."
                 + polite_end()
             )
 
-        # FEEDBACK
         elif intent == "feedback":
-
             user["step"] = "feedback"
+            return "💬 Please share your feedback 😊"
 
-            return (
-                "💬 Please share your feedback 😊"
-            )
-
-        # RECOMMEND
         elif intent == "recommend":
-
             if user["orders"]:
-
                 last = user["orders"][-1]
-
                 return (
-                    f"⭐ You usually order {last['item']} 😊\n\n"
-                    "Would you like to reorder it today?"
+                    f"⭐ You usually order from our menu 😊\n\n"
+                    "Would you like to see the menu again?\n"
+                    "Type *menu* to browse 😊"
                 )
-
             return (
                 "⭐ Today's Recommendation:\n\n"
                 "🥪 Sandwich + ☕ Coffee Combo"
                 + polite_end()
             )
 
-        # DIRECT FOOD ORDER
-        elif intent == "coffee":
-
-            user["current_order"] = {
-                "item": "Filter Coffee",
-                "price": 25
-            }
-
-            user["step"] = "quantity"
-
-            return (
-                "☕ Filter Coffee selected.\n\n"
-                "Enter quantity 😊"
-            )
-
-        elif intent == "sandwich":
-
-            user["current_order"] = {
-                "item": "Sandwich",
-                "price": 45
-            }
-
-            user["step"] = "quantity"
-
-            return (
-                "🥪 Sandwich selected.\n\n"
-                "Enter quantity 😊"
-            )
-
-        elif intent == "samosa":
-
-            user["current_order"] = {
-                "item": "Samosa",
-                "price": 20
-            }
-
-            user["step"] = "quantity"
-
-            return (
-                "🥟 Samosa selected.\n\n"
-                "Enter quantity 😊"
-            )
+        elif intent in ["coffee", "sandwich", "samosa"]:
+            # Direct order from menu step
+            user["step"] = "food"
+            return _handle_food_selection(user, intent)
 
         else:
-
             return (
                 "😊 I can help you order food, track orders, "
                 "check crowd status and more.\n\n"
@@ -256,78 +150,87 @@ def process_message(phone, msg):
                 "• Is cafeteria busy?"
             )
 
-    # FOOD STEP
+    # ─── FOOD SELECTION STEP ─────────────────────────────────────
     elif user["step"] == "food":
 
-        msg = msg.lower()
+        msg_lower = msg.lower()
 
-        if msg == "1" or "samosa" in msg:
-
-            item = "Samosa"
-            price = 20
-
-        elif msg == "2" or "sandwich" in msg:
-
-            item = "Sandwich"
-            price = 45
-
-        elif msg == "3" or "coffee" in msg:
-
-            item = "Filter Coffee"
-            price = 25
-
+        if msg_lower == "1" or "samosa" in msg_lower:
+            return _handle_food_selection(user, "samosa")
+        elif msg_lower == "2" or "sandwich" in msg_lower:
+            return _handle_food_selection(user, "sandwich")
+        elif msg_lower == "3" or "coffee" in msg_lower:
+            return _handle_food_selection(user, "coffee")
         else:
-
             return (
                 "⚠️ Please select a valid item.\n\n"
-                "1️⃣ Samosa\n"
-                "2️⃣ Sandwich\n"
-                "3️⃣ Filter Coffee"
+                "1️⃣ Samosa — ₹20\n"
+                "2️⃣ Sandwich — ₹45\n"
+                "3️⃣ Filter Coffee — ₹25"
             )
 
-        user["current_order"] = {
-            "item": item,
-            "price": price
-        }
-
-        user["step"] = "quantity"
-
-        return (
-            f"✅ {item} selected.\n\n"
-            "Enter quantity 😊"
-        )
-
-    # QUANTITY
+    # ─── QUANTITY STEP ───────────────────────────────────────────
     elif user["step"] == "quantity":
 
-        if not msg.isdigit():
-
-            return "⚠️ Please enter valid quantity."
+        if not msg.isdigit() or int(msg) < 1:
+            return "⚠️ Please enter a valid quantity (e.g. 1, 2, 3)"
 
         qty = int(msg)
-
         item = user["current_order"]["item"]
         price = user["current_order"]["price"]
+        subtotal = qty * price
 
-        total = qty * price
+        # Add to cart
+        user["cart"].append({
+            "item": item,
+            "price": price,
+            "qty": qty,
+            "subtotal": subtotal
+        })
 
-        user["current_order"]["qty"] = qty
-        user["current_order"]["total"] = total
-
-        user["step"] = "pickup"
+        user["step"] = "add_more"
 
         return (
-            "🧾 Order Summary\n\n"
-            f"🍽️ {item} × {qty}\n"
-            f"💰 Total: ₹{total}\n\n"
-            "Select pickup time:\n\n"
-            "1️⃣ 1:00 PM\n"
-            "2️⃣ 1:30 PM\n"
-            "3️⃣ 2:00 PM"
+            f"✅ *{item} × {qty}* added to cart!\n\n"
+            f"🛒 *Your Cart:*\n{get_cart_summary(user['cart'])}\n\n"
+            "━━━━━━━━━━━━━━\n"
+            "Want to add more items?\n\n"
+            "1️⃣ Yes, add more\n"
+            "2️⃣ No, proceed to checkout"
         )
 
-    # PICKUP
-        # PICKUP
+    # ─── ADD MORE STEP ───────────────────────────────────────────
+    elif user["step"] == "add_more":
+
+        if msg == "1" or "yes" in msg.lower():
+            user["step"] = "food"
+            return (
+                "🍽️ *Menu*\n\n"
+                "1️⃣ Samosa — ₹20\n"
+                "2️⃣ Sandwich — ₹45\n"
+                "3️⃣ Filter Coffee — ₹25\n\n"
+                "Select item to add 😊"
+            )
+
+        elif msg == "2" or "no" in msg.lower():
+            user["step"] = "pickup"
+            return (
+                f"🛒 *Final Cart:*\n{get_cart_summary(user['cart'])}\n\n"
+                "━━━━━━━━━━━━━━\n"
+                "⏰ Select pickup time:\n\n"
+                "1️⃣ 1:00 PM\n"
+                "2️⃣ 1:30 PM\n"
+                "3️⃣ 2:00 PM"
+            )
+
+        else:
+            return (
+                "Please reply:\n"
+                "1️⃣ Yes, add more\n"
+                "2️⃣ No, proceed to checkout"
+            )
+
+    # ─── PICKUP STEP ─────────────────────────────────────────────
     elif user["step"] == "pickup":
 
         slots = {
@@ -337,7 +240,6 @@ def process_message(phone, msg):
         }
 
         if msg not in slots:
-
             return (
                 "⚠️ Select valid pickup slot.\n\n"
                 "1️⃣ 1:00 PM\n"
@@ -346,123 +248,138 @@ def process_message(phone, msg):
             )
 
         pickup = slots[msg]
-
         user["current_order"]["pickup"] = pickup
-
         user["step"] = "payment"
+        total = get_cart_total(user["cart"])
 
         return (
-            "💳 Payment Options\n\n"
-            "1️⃣ UPI Payment\n"
-            "2️⃣ Cash on Pickup\n\n"
-            "Reply with payment option 😊"
+            f"⏰ Pickup at *{pickup}*\n\n"
+            f"💰 Total Amount: *₹{total}*\n\n"
+            "━━━━━━━━━━━━━━\n"
+            "💳 *Payment Options*\n\n"
+            "1️⃣ UPI / QR Code\n"
+            "2️⃣ Cash on Pickup"
         )
 
-    # PAYMENT
+    # ─── PAYMENT STEP ────────────────────────────────────────────
     elif user["step"] == "payment":
 
-        # UPI
+        total = get_cart_total(user["cart"])
+
         if msg == "1":
-
-            user["step"] = "payment_done"
-
+            user["step"] = "payment_confirmation"
             return (
-                "💳 Please pay using UPI\n\n"
-                "📱 UPI ID:\n"
-                "class2cafe@upi\n\n"
-                "After payment reply:\n"
-                "PAID"
+                "📱 *UPI Payment*\n\n"
+                f"💰 Amount: *₹{total}*\n\n"
+                "━━━━━━━━━━━━━━\n"
+                "Scan QR Code below 👇\n\n"
+                "🔲 *[QR CODE]*\n"
+                "┌─────────────┐\n"
+                "│  ████ ░░ ██ │\n"
+                "│  ░░ █████░░ │\n"
+                "│  ██░░░ ████ │\n"
+                "│  ░░██ ░░░██ │\n"
+                "└─────────────┘\n\n"
+                "📲 UPI ID: *class2cafe@upi*\n\n"
+                "━━━━━━━━━━━━━━\n"
+                "After payment, reply with your\n"
+                "*UPI Transaction ID* to confirm ✅"
             )
 
-        # CASH
         elif msg == "2":
-
             order_id = generate_order_id()
-
             order = {
                 "order_id": order_id,
-                "item": user["current_order"]["item"],
-                "qty": user["current_order"]["qty"],
-                "total": user["current_order"]["total"],
+                "cart": user["cart"].copy(),
+                "total": total,
                 "pickup": user["current_order"]["pickup"],
                 "time": time.time(),
                 "payment": "Cash"
             }
-
             user["orders"].append(order)
-
+            user["cart"] = []
             user["step"] = "menu"
 
             return (
-                "🎉 Order Confirmed!\n\n"
-                f"🧾 Order ID: {order_id}\n"
-                f"🍽️ {order['item']} × {order['qty']}\n"
-                f"💰 Total: ₹{order['total']}\n"
-                f"⏰ Pickup Time: {order['pickup']}\n"
-                "💵 Payment: Cash on Pickup"
+                "🎉 *Order Confirmed!*\n\n"
+                f"🧾 Order ID: *{order_id}*\n\n"
+                f"🛒 Items:\n{get_cart_summary(order['cart'])}\n\n"
+                f"⏰ Pickup: *{order['pickup']}*\n"
+                "💵 Payment: *Cash on Pickup*\n\n"
+                "Please pay at the counter 😊"
                 + polite_end()
             )
 
         else:
-
             return (
                 "⚠️ Select valid payment option.\n\n"
-                "1️⃣ UPI Payment\n"
+                "1️⃣ UPI / QR Code\n"
                 "2️⃣ Cash on Pickup"
             )
 
-    # PAYMENT DONE
-    elif user["step"] == "payment_done":
+    # ─── PAYMENT CONFIRMATION STEP ───────────────────────────────
+    elif user["step"] == "payment_confirmation":
 
-        if msg.lower() != "paid":
-
+        # Accept any transaction ID (min 6 chars) or "PAID"
+        if len(msg.strip()) < 4:
             return (
-                "⚠️ After payment type:\n\n"
-                "PAID"
+                "⚠️ Please enter your *UPI Transaction ID*\n\n"
+                "Example: *UPI123456789*\n\n"
+                "Or type *PAID* if you don't have the ID handy."
             )
 
+        txn_id = msg.strip().upper()
+        total = get_cart_total(user["cart"])
         order_id = generate_order_id()
 
         order = {
             "order_id": order_id,
-            "item": user["current_order"]["item"],
-            "qty": user["current_order"]["qty"],
-            "total": user["current_order"]["total"],
+            "cart": user["cart"].copy(),
+            "total": total,
             "pickup": user["current_order"]["pickup"],
             "time": time.time(),
-            "payment": "UPI"
+            "payment": "UPI",
+            "txn_id": txn_id
         }
 
         user["orders"].append(order)
-
+        user["cart"] = []
         user["step"] = "menu"
 
         return (
-            "🎉 Payment Successful!\n\n"
-            "✅ Order Confirmed\n\n"
-            f"🧾 Order ID: {order_id}\n"
-            f"🍽️ {order['item']} × {order['qty']}\n"
-            f"💰 Total: ₹{order['total']}\n"
-            f"⏰ Pickup Time: {order['pickup']}\n"
-            "💳 Payment: UPI"
+            "✅ *Payment Confirmed!*\n\n"
+            "🎉 *Order Placed Successfully!*\n\n"
+            f"🧾 Order ID: *{order_id}*\n"
+            f"💳 Txn ID: *{txn_id}*\n\n"
+            f"🛒 Items:\n{get_cart_summary(order['cart'])}\n\n"
+            f"⏰ Pickup: *{order['pickup']}*\n"
+            "💳 Payment: *UPI ✅*"
             + polite_end()
         )
 
-        
-
-      
-
-    # FEEDBACK
+    # ─── FEEDBACK STEP ───────────────────────────────────────────
     elif user["step"] == "feedback":
-
         user["step"] = "menu"
-
         return (
-            "✅ Thank you for your feedback 😊"
+            "✅ Thank you for your feedback 😊\n\n"
+            "We'll keep improving!"
             + polite_end()
         )
 
     return (
         "⚠️ Something went wrong.\n\n"
-        "Please try again."
+        "Please type *hi* to start again."
     )
+
+
+# ─── HELPER ──────────────────────────────────────────────────────
+def _handle_food_selection(user, intent):
+    food_map = {
+        "samosa": ("Samosa", 20, "🥟"),
+        "sandwich": ("Sandwich", 45, "🥪"),
+        "coffee": ("Filter Coffee", 25, "☕")
+    }
+    item, price, emoji = food_map[intent]
+    user["current_order"] = {"item": item, "price": price}
+    user["step"] = "quantity"
+    return f"{emoji} *{item}* selected (₹{price} each)\n\nEnter quantity 😊"
