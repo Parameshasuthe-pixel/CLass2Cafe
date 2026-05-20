@@ -1,3 +1,4 @@
+from ai_engine import ask_ai
 import random
 import time
 
@@ -21,66 +22,68 @@ def polite_end():
         "Visit us again soon 😊"
     )
 
-
 def detect_intent(msg):
+    return ask_ai(msg)
 
-    msg = msg.lower()
+# def detect_intent(msg):
 
-    # greetings
-    if any(word in msg for word in [
-        "hi", "hello", "hey", "bro", "dude"
-    ]):
-        return "greeting"
+#     msg = msg.lower()
 
-    # menu
-    elif any(word in msg for word in [
-        "menu", "hungry", "food", "eat"
-    ]):
-        return "menu"
+#     # greetings
+#     if any(word in msg for word in [
+#         "hi", "hello", "hey", "bro", "dude"
+#     ]):
+#         return "greeting"
 
-    # coffee
-    elif any(word in msg for word in [
-        "coffee", "tea", "drink"
-    ]):
-        return "coffee"
+#     # menu
+#     elif any(word in msg for word in [
+#         "menu", "hungry", "food", "eat"
+#     ]):
+#         return "menu"
 
-    # sandwich
-    elif "sandwich" in msg:
-        return "sandwich"
+#     # coffee
+#     elif any(word in msg for word in [
+#         "coffee", "tea", "drink"
+#     ]):
+#         return "coffee"
 
-    # samosa
-    elif "samosa" in msg:
-        return "samosa"
+#     # sandwich
+#     elif "sandwich" in msg:
+#         return "sandwich"
 
-    # crowd
-    elif any(word in msg for word in [
-        "crowd", "busy", "rush", "waiting"
-    ]):
-        return "crowd"
+#     # samosa
+#     elif "samosa" in msg:
+#         return "samosa"
 
-    # cancel
-    elif "cancel" in msg:
-        return "cancel"
+#     # crowd
+#     elif any(word in msg for word in [
+#         "crowd", "busy", "rush", "waiting"
+#     ]):
+#         return "crowd"
 
-    # track
-    elif any(word in msg for word in [
-        "track", "status"
-    ]):
-        return "track"
+#     # cancel
+#     elif "cancel" in msg:
+#         return "cancel"
 
-    # feedback
-    elif any(word in msg for word in [
-        "feedback", "suggestion"
-    ]):
-        return "feedback"
+#     # track
+#     elif any(word in msg for word in [
+#         "track", "status"
+#     ]):
+#         return "track"
 
-    # recommend
-    elif any(word in msg for word in [
-        "recommend", "suggest"
-    ]):
-        return "recommend"
+#     # feedback
+#     elif any(word in msg for word in [
+#         "feedback", "suggestion"
+#     ]):
+#         return "feedback"
 
-    return "unknown"
+#     # recommend
+#     elif any(word in msg for word in [
+#         "recommend", "suggest"
+#     ]):
+#         return "recommend"
+
+#     return "unknown"
 
 
 def process_message(phone, msg):
