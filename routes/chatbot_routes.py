@@ -9,7 +9,16 @@ chatbot_bp = Blueprint("chatbot", __name__)
 @chatbot_bp.route("/webhook", methods=["POST"])
 def webhook():
 
-    twilio_response = MessagingResponse()
-    twilio_response.message("Hello from Class2Cafe 🚀")
+    incoming_msg = request.form.get("Body", "")
+    sender = request.form.get("From", "")
 
-    return str(twilio_response)
+    print("MESSAGE:", incoming_msg)
+
+    response_text = process_message(sender, incoming_msg)
+
+    print("RESPONSE:", response_text)
+
+    twilio_response = MessagingResponse()
+    twilio_response.message(response_text)
+
+    return str(twilio_response), 200, {'Content-Type': 'text/xml'}
