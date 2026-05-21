@@ -1,13 +1,13 @@
 from groq import Groq
 
 client = Groq(
-    api_key="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"
+    api_key="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"
 )
 
 def ask_ai(message):
 
     response = client.chat.completions.create(
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "system",
