@@ -16,7 +16,7 @@ def webhook():
 
     print("MESSAGE:", incoming_msg)
 
-    response_text = process_message(sender, incoming_msg)
+    response_text = "Hello from Render bot!"
 
     print("RESPONSE:", response_text)
 
