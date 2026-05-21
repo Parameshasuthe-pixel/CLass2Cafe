@@ -1,7 +1,9 @@
 from groq import Groq
-
+from dotenv import load_dotenv
+import os
+load_dotenv()
 client = Groq(
-    api_key="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"
+    api_key=os.environ.get("GROQ_API_KEY")
 )
 
 def ask_ai(message):
