@@ -1,12 +1,20 @@
 from groq import Groq
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
-client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY")
-)
 
 def ask_ai(message):
+
+    key = os.environ.get("GROQ_API_KEY")
+
+    print("GROQ KEY FOUND:", key is not None)
+
+    if key:
+        print("GROQ KEY PREFIX:", key[:10])
+        print("GROQ KEY LENGTH:", len(key))
+
+    client = Groq(api_key=key)
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -29,10 +37,6 @@ feedback
 recommend
 greeting
 unknown
-
-Do not explain anything.
-Do not write sentences.
-Only return one word.
 """
             },
             {
