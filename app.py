@@ -28,6 +28,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
+    print("WEBHOOK HIT")
     incoming_msg = request.form.get("Body")
 
     resp = MessagingResponse()
