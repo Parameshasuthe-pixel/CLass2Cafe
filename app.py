@@ -30,9 +30,11 @@ from twilio.twiml.messaging_response import MessagingResponse
 def webhook():
     print("WEBHOOK HIT")
     incoming_msg = request.form.get("Body")
+    
 
     resp = MessagingResponse()
     resp.message(f"You said: {incoming_msg}")
+    print("TWILIO RESPONSE CREATED")
 
     return str(resp)
 
