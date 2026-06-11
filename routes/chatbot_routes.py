@@ -5,6 +5,8 @@ chatbot_bp = Blueprint("chatbot", __name__)
 
 @chatbot_bp.route("/webhook", methods=["POST"])
 def webhook():
+    print("WEBHOOK HIT",flush=True)
+    print(request.form,flush=True)
 
     twilio_response = MessagingResponse()
     twilio_response.message("Hello from Class2Cafe!")
