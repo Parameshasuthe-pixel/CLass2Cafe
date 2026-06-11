@@ -23,27 +23,12 @@ app.register_blueprint(payment_bp)
 def home():
     return render_template("chatbot.html")
 
-from flask import request
-from twilio.twiml.messaging_response import MessagingResponse
-
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    print("WEBHOOK HIT")
-    incoming_msg = request.form.get("Body")
-    
-
-    resp = MessagingResponse()
-    resp.message(f"You said: {incoming_msg}")
-    print("TWILIO RESPONSE CREATED")
-
-    return str(resp)
 
 with app.app_context():
     db.create_all()
 
 
-#start_scheduler()
+# start_scheduler()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-

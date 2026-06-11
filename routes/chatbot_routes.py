@@ -21,4 +21,4 @@ def webhook():
     twilio_response = MessagingResponse()
     twilio_response.message(response_text)
 
-    return str(twilio_response), 200, {'Content-Type': 'text/xml'}
+    return str(twilio_response), 200, {"Content-Type": "text/xml"}
