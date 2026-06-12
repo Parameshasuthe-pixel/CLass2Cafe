@@ -1,17 +1,24 @@
 from flask import Blueprint, request
 from twilio.twiml.messaging_response import MessagingResponse
 
+from chatbot import process_message
+
 chatbot_bp = Blueprint("chatbot", __name__)
+
 
 @chatbot_bp.route("/webhook", methods=["POST"])
 def webhook():
 
-    print("WEBHOOK HIT", flush=True)
+    incoming_msg = request.form.get("Body", "")
+    sender = request.form.get("From", "")
 
-    incoming_msg = request.form.get("Body")
-    print("Message:", incoming_msg, flush=True)
+    print("MESSAGE:", incoming_msg)
+
+    response_text = process_message(sender, incoming_msg)
+
+    print("RESPONSE:", response_text)
 
     twilio_response = MessagingResponse()
-    twilio_response.message("Received: " + str(incoming_msg))
+    twilio_response.message(response_text)
 
-    return str(twilio_response)
+    return str(twilio_response), 200, {'Content-Type': 'text/xml'}
