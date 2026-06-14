@@ -1,5 +1,5 @@
 from ai_engine import ask_ai
-from models import db, User, Order
+from models import db, User, Order, MenuItem
 import random
 import time
 
@@ -106,14 +106,12 @@ def process_message(phone, msg):
 
             user["step"] = "food"
 
-            return (
-                "🍽️ *Today's Menu*\n\n"
-                "1️⃣ Samosa — ₹20\n"
-                "2️⃣ Sandwich — ₹45\n"
-                "3️⃣ Filter Coffee — ₹25\n\n"
-                "Reply with item name or number 😊"
-            )
-
+            items=MenuItem.query.filter_by(availability=True).all()
+            menu_text="🍽️ *Menu*\n\n"
+            for i, item in enumerate(items,start=1):
+                menu_text+=f"{i}.{item.item_name}-₹{item.price}\n"
+            menu_text+="\nSelect item😊"
+            return menu_text
         # CROWD STATUS
         elif intent == "crowd":
 
@@ -392,7 +390,11 @@ def process_message(phone, msg):
                            total_amount=total,
                            payment_status="Unpaid",
                            status="Pending"
-                          )
+            )
+            db.session.add(db_order)
+            db.session.commit()
+
+
             user["cart"] = []
 
             user["step"] = "menu"
