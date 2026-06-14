@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template
-from models import Order, MenuItem, CrowdData
+from flask import Blueprint, render_template, request, redirect
+from models import db, Order, MenuItem, CrowdData
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -20,6 +20,23 @@ def orders_page():
 def menu_page():
     items = MenuItem.query.all()
     return render_template('menu.html', items=items)
+
+
+# ADD NEW MENU ITEM
+@admin_bp.route('/add_menu', methods=['POST'])
+def add_menu():
+
+    item = MenuItem(
+        item_name=request.form['item_name'],
+        category=request.form['category'],
+        price=int(request.form['price']),
+        availability=True
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect('/menu')
 
 
 @admin_bp.route('/crowd')

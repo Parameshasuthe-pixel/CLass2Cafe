@@ -1,4 +1,5 @@
 from ai_engine import ask_ai
+from models import db, User, Order
 import random
 import time
 
@@ -380,7 +381,18 @@ def process_message(phone, msg):
             }
 
             user["orders"].append(order)
-
+            customer = User.query.filter_by(whatsapp_number=phone).first()
+            if not customer:
+                customer=User(name="Customer",whatsapp_number=phone)
+                db.session.add(customer)
+                db.session.commit()
+            db_order=Order(order_id=order_id,
+                           token_number=order_id,
+                           user_id=customer.id,
+                           total_amount=total,
+                           payment_status="Unpaid",
+                           status="Pending"
+                          )
             user["cart"] = []
 
             user["step"] = "menu"
