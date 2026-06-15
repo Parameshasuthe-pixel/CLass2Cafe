@@ -284,14 +284,15 @@ def process_message(phone, msg):
         if msg == "1" or msg_lower == "yes":
 
             user["step"] = "food"
+            items= MenuItem.query.filter_by(availability=True).all()
+            menu_text="🍽️ *Menu*\n\n"
+            for i, item in enumerate(items,start=1):
+                menu_text+=f"{i}.{item.item_name}-₹{item.price}\n"
+            menu_text+="\nSelect item😊"
+            return menu_text
+            
 
-            return (
-                "🍽️ *Menu*\n\n"
-                "1️⃣ Samosa — ₹20\n"
-                "2️⃣ Sandwich — ₹45\n"
-                "3️⃣ Filter Coffee — ₹25\n\n"
-                "Select item 😊"
-            )
+            
 
         elif msg == "2" or msg_lower == "no":
 
