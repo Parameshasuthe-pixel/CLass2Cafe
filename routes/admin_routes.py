@@ -48,3 +48,39 @@ def crowd_page():
 @admin_bp.route('/analytics')
 def analytics_page():
     return render_template('analytics.html')
+
+@admin_bp.route('/complete/<int:order_id>')
+def complete_order(order_id):
+
+    order = Order.query.get(order_id)
+
+    if order:
+        order.status = "Completed"
+        db.session.commit()
+
+    return redirect('/orders')
+
+@admin_bp.route('/update_crowd/<status>')
+def update_crowd(status):
+
+    crowd = CrowdData.query.first()
+
+    if not crowd:
+        crowd = CrowdData(
+            time_slot="Current",
+            crowd_percentage=0
+        )
+        db.session.add(crowd)
+
+    if status == "low":
+        crowd.crowd_percentage = 20
+
+    elif status == "medium":
+        crowd.crowd_percentage = 50
+
+    elif status == "high":
+        crowd.crowd_percentage = 90
+
+    db.session.commit()
+
+    return redirect('/crowd')

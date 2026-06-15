@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Crowd</title>
+    <title>Crowd Status</title>
 </head>
 <body>
 
-<h1>Crowd Status</h1>
+<h1>Crowd Status Control</h1>
+
+<h2>Current Crowd Status</h2>
 
 {% for c in crowd %}
 <p>
 {{ c.time_slot }} - {{ c.crowd_percentage }}%
 </p>
 {% endfor %}
+
+<hr>
+
+<h2>Update Crowd Level</h2>
+
+<p><a href="/update_crowd/low">🟢 Low Crowd</a></p>
+
+<p><a href="/update_crowd/medium">🟡 Medium Crowd</a></p>
+
+<p><a href="/update_crowd/high">🔴 High Crowd</a></p>
 
 </body>
 </html>
