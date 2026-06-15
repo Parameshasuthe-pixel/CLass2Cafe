@@ -205,27 +205,36 @@ def process_message(phone, msg):
     elif user["step"] == "food":
 
         msg_lower = msg.lower().strip()
-
-        if msg_lower == "1" or msg_lower == "samosa":
-
-            return _handle_food_selection(user, "samosa")
-
-        elif msg_lower == "2" or msg_lower == "sandwich":
-
-            return _handle_food_selection(user, "sandwich")
-
-        elif msg_lower == "3" or msg_lower == "coffee":
-
-            return _handle_food_selection(user, "coffee")
-
-        else:
-
-            return (
-                "⚠️ Please select a valid item.\n\n"
-                "1️⃣ Samosa — ₹20\n"
-                "2️⃣ Sandwich — ₹45\n"
-                "3️⃣ Filter Coffee — ₹25"
-            )
+        items=MenuItem.query.filter_by(availability=True).all()
+        if msg_lower.isdigit():
+            index=int(msg_lower)-1
+            if 0<=index<len(items):
+                item=items[index]
+                user["current_order"]={
+                    "item":item.item_name,
+                    "price":item.price
+                }
+                user["step"]="quantity"
+                return(
+                    f"🍽️ *{item.item_name}* selected\n"
+                    f"💰 Price:Rs.{item.price}\n\n"
+                    "Enter quantity 😊"
+                )
+        for item in items:
+            if msg_lower==item.item_name.lower():
+                user["current_order"]={
+                    "item":item.item_name,
+                    "price":item.price
+                }
+                user["step"]="quantity"
+                return(
+                    f"🍽️ *{item.item_name}* selected\n"
+                    f"💰 Price:Rs.{item.price}\n\n"
+                    "Enter quantity 😊"
+                )
+        return"⚠️Please enter a valid item from the menu"
+        
+            
 
     # ─────────────────────────────────────────────
     # QUANTITY
