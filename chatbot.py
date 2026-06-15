@@ -1,5 +1,5 @@
 from ai_engine import ask_ai
-from models import db, User, Order, MenuItem
+from models import db, User, Order, OrderItem, MenuItem
 import random
 import time
 
@@ -402,6 +402,16 @@ def process_message(phone, msg):
                            status="Pending"
             )
             db.session.add(db_order)
+            db.session.commit()
+            for cart_item in order["cart"]:
+                menu_item=MenuItem.query.filter_by(item_name=cart_item["item"]).first()
+                if menu_item:
+                    order_item=OrderItem(order_id=db_order.id,
+                                         menu_item_id=menu_item.id,
+                                         quantity=cart_item["qty"],
+                                         customization=""
+                    )
+                    db.session.add(order_item)
             db.session.commit()
 
 
