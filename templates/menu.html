@@ -41,7 +41,7 @@
             <th>Item Name</th>
             <th>Category</th>
             <th>Price</th>
-            <th>Actions</th>
+            <th>Action</th>
         </tr>
 
         {% for item in items %}
@@ -56,17 +56,9 @@
             <td>₹{{ item.price }}</td>
 
             <td>
-
-                <a href="/edit_menu/{{ item.id }}">
-                    Edit
-                </a>
-
-                |
-
                 <a href="/delete_menu/{{ item.id }}">
                     Delete
                 </a>
-
             </td>
 
         </tr>
