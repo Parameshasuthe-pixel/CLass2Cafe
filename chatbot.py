@@ -166,21 +166,13 @@ def process_message(phone, msg):
         # RECOMMENDATION
         elif intent == "recommend":
 
-            if user["orders"]:
-
-                return (
-                    "⭐ Based on your previous orders,\n"
-                    "you may like:\n\n"
-                    "☕ Filter Coffee\n"
-                    "🥪 Sandwich Combo"
-                    + polite_end()
-                )
-
-            return (
-                "⭐ Today's Recommendation:\n\n"
-                "🥪 Sandwich + ☕ Coffee Combo"
-                + polite_end()
-            )
+            items=MenuItem.query.filter_by(availability=True).limit(3).all()
+            if not items:
+                return "⚠️ No items available right now"
+            text="⭐ *Recommended Items*\n\n"
+            for item in items:
+                text+=f"🍽️ {item.item_name}-₹{item.price}\n"
+            return text +polite_end()
 
         # DIRECT ORDER
         elif intent !="unknown":
@@ -383,7 +375,7 @@ def process_message(phone, msg):
                 "📱 *UPI Payment*\n\n"
                 f"💰 Amount: *₹{total}*\n\n"
                 "━━━━━━━━━━━━━━\n"
-                "📲 UPI ID: *class2cafe@upi*\n\n"
+                "📲 UPI ID: *kavananayak40@okaxis*\n\n"
                 "After payment,\n"
                 "reply with Transaction ID ✅"
             )
