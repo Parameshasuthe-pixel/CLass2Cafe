@@ -34,6 +34,11 @@ class Order(db.Model):
     payment_status = db.Column(db.String(50), default="Unpaid")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    order_items = db.relationship(
+        'OrderItem',
+        backref='order',
+        lazy=True
+    )
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,6 +47,10 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer)
     customization = db.Column(db.String(200))
 
+    menu_item = db.relationship(
+        'MenuItem',
+        backref='order_items'
+    )
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
