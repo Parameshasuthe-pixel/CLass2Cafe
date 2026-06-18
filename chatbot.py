@@ -117,6 +117,10 @@ def process_message(phone, msg):
             if percentage<30:
                 status="🟢 Not Busy"
                 wait_time="5-10 mins"
+            elif percentage < 70:
+                status = "🟡 Moderately Busy"
+                wait_time = "10-15 mins"
+
             else:
                 status="🔴 Busy"
                 wait_time="15-30 mins"
@@ -144,17 +148,27 @@ def process_message(phone, msg):
 
         # CANCEL ORDER
         elif intent == "cancel":
-
             if not user["orders"]:
                 return "❌ No active orders available." + polite_end()
-
-            last = user["orders"].pop()
-
+            last = user["orders"][-1]
+            elapsed = time.time() - last["time"]
+            if elapsed > 300:
+                return (
+                    "⏳ Orders can only be cancelled within 5 minutes of placing them."
+                    + polite_end()
+                    )
+            user["orders"].pop()
+            db_order = Order.query.filter_by(
+                order_id=last["order_id"]
+                ).first()
+            if db_order:
+                db_order.status = "Cancelled"
+                db.session.commit()
             return (
                 f"✅ Order {last['order_id']} cancelled successfully.\n\n"
                 "💰 Refund will be processed shortly."
                 + polite_end()
-            )
+                )
 
         # FEEDBACK
         elif intent == "feedback":

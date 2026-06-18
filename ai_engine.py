@@ -54,6 +54,18 @@ Examples:
 "hello" -> greeting
 "hi" -> greeting
 
+"cancel order" -> cancel
+"cancel my order" -> cancel
+"cancel it" -> cancel
+
+"where is my order" -> track
+"track order" -> track
+"order status" -> track
+
+"how busy is the cafeteria?" -> crowd
+"is the cafeteria crowded?" -> crowd
+"crowd status" -> crowd
+
 Anything else -> unknown
 
 Do not explain anything.
