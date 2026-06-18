@@ -40,6 +40,12 @@ class Order(db.Model):
         lazy=True
     )
 
+    payments = db.relationship(
+        'Payment',
+        backref='order',
+        lazy=True
+    )
+
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
@@ -76,3 +82,4 @@ class PickupSlot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slot_time = db.Column(db.String(50))
     available = db.Column(db.Boolean, default=True)
+

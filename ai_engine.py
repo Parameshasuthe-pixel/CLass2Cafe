@@ -23,9 +23,6 @@ You are an intent classifier.
 
 Return ONLY ONE WORD from this list:
 
-coffee
-sandwich
-samosa
 menu
 crowd
 track
@@ -34,6 +31,30 @@ feedback
 recommend
 greeting
 unknown
+
+Food item names should NEVER be returned.
+Food ordering is handled separately.
+
+Examples:
+
+"show menu" -> menu
+"what's on the menu?" -> menu
+
+"is cafeteria busy?" -> crowd
+"how crowded is it?" -> crowd
+
+"track my order" -> track
+
+"cancel my order" -> cancel
+
+"I want to give feedback" -> feedback
+
+"recommend something" -> recommend
+
+"hello" -> greeting
+"hi" -> greeting
+
+Anything else -> unknown
 
 Do not explain anything.
 Do not write sentences.

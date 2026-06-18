@@ -1,5 +1,5 @@
 from ai_engine import ask_ai
-from models import CrowdData, db, User, Order, OrderItem, MenuItem, CrowdData
+from models import CrowdData, db, User, Order, OrderItem, MenuItem, Payment, PickupSlot
 import random
 import time
 
@@ -123,7 +123,7 @@ def process_message(phone, msg):
             return(f"{status}\n\n"
                    f"👥Occupancy:{percentage}%\n\n"
                    f"⌛ Estimated Wait Time:{wait_time}"
-                   + polite_end
+                   + polite_end()
                    )
 
         
@@ -175,35 +175,25 @@ def process_message(phone, msg):
             return text +polite_end()
 
         # DIRECT ORDER
-        elif intent !="unknown":
-            items=MenuItem.query.filter_by(availability=True).all()
+        # DIRECT ORDER + UNKNOWN
+        else:
+            items = MenuItem.query.filter_by(availability=True).all()
             for item in items:
-                if intent==item.item_name.lower() in msg.lower():
-                    user["current_order"]={
-                        "item":item.item_name,
-                        "price":item.price
-                    }
-                    user["step"]="quantity"
-                    return(
+                if item.item_name.lower() in msg.lower():
+                    user["current_order"] = {
+                        "item": item.item_name,
+                        "price": item.price
+                        }
+                    user["step"] = "quantity"
+                    return (
                         f"🍽️ *{item.item_name}* selected\n"
-                        f"💰 Price:Rs.{item.price}\n\n"
+                        f"💰 Price: ₹{item.price}\n\n"
                         "Enter quantity 😊"
                     )
-
-        # UNKNOWN
-        else:
-
             return (
-                "😊 I can help you with:\n\n"
-                "• Food ordering\n"
-                "• Tracking orders\n"
-                "• Crowd status\n"
-                "• Recommendations\n\n"
-                "Try:\n"
-                "• Show menu\n"
-                "• I want coffee\n"
-                "• Is cafeteria busy?"
-            )
+                "❌ Sorry, that item is not available right now.\n\n"
+                "Type *Show menu* to see available items 😊"
+                )
 
     # ─────────────────────────────────────────────
     # FOOD SELECTION
@@ -301,18 +291,18 @@ def process_message(phone, msg):
             
 
         elif msg == "2" or msg_lower == "no":
-
             user["step"] = "pickup"
-
+            slots = PickupSlot.query.filter_by(available=True).all()
+            slot_text = ""
+            for i, slot in enumerate(slots, start=1):
+                slot_text += f"{i}️⃣ {slot.slot_time}\n"
             return (
                 f"🛒 *Final Cart:*\n"
                 f"{get_cart_summary(user['cart'])}\n\n"
                 "━━━━━━━━━━━━━━\n"
                 "⏰ Select pickup time:\n\n"
-                "1️⃣ 1:00 PM\n"
-                "2️⃣ 1:30 PM\n"
-                "3️⃣ 2:00 PM"
-            )
+                + slot_text
+                )
 
         else:
 
@@ -327,20 +317,19 @@ def process_message(phone, msg):
     # ─────────────────────────────────────────────
     elif user["step"] == "pickup":
 
-        slots = {
-            "1": "1:00 PM",
-            "2": "1:30 PM",
-            "3": "2:00 PM"
-        }
+        slots_db = PickupSlot.query.filter_by(available=True).all()
+        slots = {}
+        for i, slot in enumerate(slots_db, start=1):
+            slots[str(i)] = slot.slot_time
 
         if msg not in slots:
-
+            slot_text = ""
+            for i, slot in enumerate(slots_db, start=1):
+                slot_text += f"{i}️⃣ {slot.slot_time}\n"
             return (
-                "⚠️ Select valid pickup slot.\n\n"
-                "1️⃣ 1:00 PM\n"
-                "2️⃣ 1:30 PM\n"
-                "3️⃣ 2:00 PM"
-            )
+                 "⚠️ Select valid pickup slot.\n\n"
+                 + slot_text
+                 )
 
         pickup = slots[msg]
 
@@ -409,6 +398,7 @@ def process_message(phone, msg):
             )
             db.session.add(db_order)
             db.session.commit()
+
             for cart_item in order["cart"]:
                 menu_item=MenuItem.query.filter_by(item_name=cart_item["item"]).first()
                 if menu_item:
@@ -473,6 +463,48 @@ def process_message(phone, msg):
         }
 
         user["orders"].append(order)
+
+        customer = User.query.filter_by(
+            whatsapp_number=phone
+            ).first()
+        if not customer:
+            customer = User(
+                name="Customer",
+                whatsapp_number=phone
+                )
+            db.session.add(customer)
+            db.session.commit()
+        db_order = Order(
+            order_id=order_id,
+            token_number=order_id,
+            user_id=customer.id,
+            total_amount=total,
+            payment_status="Paid",
+            status="Pending"
+            )
+        db.session.add(db_order)
+        db.session.commit()
+        for cart_item in order["cart"]:
+            menu_item = MenuItem.query.filter_by(
+                item_name=cart_item["item"]
+                ).first()
+            if menu_item:
+                order_item = OrderItem(
+                    order_id=db_order.id,
+                    menu_item_id=menu_item.id,
+                    quantity=cart_item["qty"],
+                    customization=""
+                    )
+                db.session.add(order_item)
+        db.session.commit()
+        payment = Payment(
+            order_id=db_order.id,
+            transaction_id=txn_id,
+            amount=total,
+            payment_method="UPI",
+            status="Paid")
+        db.session.add(payment)
+        db.session.commit()
 
         user["cart"] = []
 
