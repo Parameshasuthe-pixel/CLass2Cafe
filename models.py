@@ -71,3 +71,8 @@ class UserPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     favorite_item = db.Column(db.String(100))
+
+class PickupSlot(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    slot_time = db.Column(db.String(50))
+    available = db.Column(db.Boolean, default=True)

@@ -1,15 +1,10 @@
 from ai_engine import ask_ai
-from models import db, User, Order, OrderItem, MenuItem
+from models import CrowdData, db, User, Order, OrderItem, MenuItem, CrowdData
 import random
 import time
 
 users = {}
 
-menu = {
-    "1": ("Samosa", 20),
-    "2": ("Sandwich", 45),
-    "3": ("Filter Coffee", 25)
-}
 
 
 def generate_order_id():
@@ -112,16 +107,26 @@ def process_message(phone, msg):
                 menu_text+=f"{i}.{item.item_name}-₹{item.price}\n"
             menu_text+="\nSelect item😊"
             return menu_text
-        # CROWD STATUS
-        elif intent == "crowd":
+        
+        elif intent=="crowd":
+            crowd=CrowdData.query.first()
+            if not crowd:
+                return ("📊 Crowd data not available." + polite_end()
+                )
+            percentage=crowd.crowd_percentage
+            if percentage<30:
+                status="🟢 Not Busy"
+                wait_time="5-10 mins"
+            else:
+                status="🔴 Busy"
+                wait_time="15-30 mins"
+            return(f"{status}\n\n"
+                   f"👥Occupancy:{percentage}%\n\n"
+                   f"⌛ Estimated Wait Time:{wait_time}"
+                   + polite_end
+                   )
 
-            return (
-                "🟡 Cafeteria is moderately crowded.\n\n"
-                "⏰ Average waiting time: 15–20 mins\n\n"
-                "✅ Best time to visit: After 2 PM 😊"
-                + polite_end()
-            )
-
+        
         # TRACK ORDER
         elif intent == "track":
 
@@ -178,11 +183,20 @@ def process_message(phone, msg):
             )
 
         # DIRECT ORDER
-        elif intent in ["coffee", "sandwich", "samosa"]:
-
-            user["step"] = "food"
-
-            return _handle_food_selection(user, intent)
+        elif intent !="unknown":
+            items=MenuItem.query.filter_by(availability=True).all()
+            for item in items:
+                if intent==item.item_name.lower() in msg.lower():
+                    user["current_order"]={
+                        "item":item.item_name,
+                        "price":item.price
+                    }
+                    user["step"]="quantity"
+                    return(
+                        f"🍽️ *{item.item_name}* selected\n"
+                        f"💰 Price:Rs.{item.price}\n\n"
+                        "Enter quantity 😊"
+                    )
 
         # UNKNOWN
         else:
@@ -505,29 +519,3 @@ def process_message(phone, msg):
         "Please type *hi* to restart."
     )
 
-
-# ─────────────────────────────────────────────
-# HELPER FUNCTION
-# ─────────────────────────────────────────────
-def _handle_food_selection(user, intent):
-
-    food_map = {
-        "samosa": ("Samosa", 20, "🥟"),
-        "sandwich": ("Sandwich", 45, "🥪"),
-        "coffee": ("Filter Coffee", 25, "☕")
-    }
-
-    item, price, emoji = food_map[intent]
-
-    user["current_order"] = {
-        "item": item,
-        "price": price
-    }
-
-    user["step"] = "quantity"
-
-    return (
-        f"{emoji} *{item}* selected\n"
-        f"💰 Price: ₹{price} each\n\n"
-        "Enter quantity 😊"
-    )

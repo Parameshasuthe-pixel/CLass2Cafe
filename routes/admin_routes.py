@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect
-from models import db, Order, MenuItem, CrowdData
+from models import PickupSlot, db, Order, MenuItem, CrowdData, User
+
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -55,7 +56,16 @@ def complete_order(order_id):
     order = Order.query.get(order_id)
 
     if order:
+
         order.status = "Completed"
+
+        customer = User.query.get(order.user_id)
+
+        if customer:
+            print(
+                f"NOTIFICATION: Order {order.order_id} completed for {customer.whatsapp_number}"
+            )
+
         db.session.commit()
 
     return redirect('/orders')
@@ -84,3 +94,44 @@ def update_crowd(status):
     db.session.commit()
 
     return redirect('/crowd')
+@admin_bp.route('/delete_menu/<int:item_id>')
+def delete_menu(item_id):
+
+    item = MenuItem.query.get(item_id)
+
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+
+    return redirect('/menu')
+@admin_bp.route('/slots')
+def slots_page():
+
+    slots = PickupSlot.query.all()
+
+    return render_template(
+        'slots.html',
+        slots=slots
+    )
+@admin_bp.route('/add_slot', methods=['POST'])
+def add_slot():
+
+    slot = PickupSlot(
+        slot_time=request.form['slot_time']
+    )
+
+    db.session.add(slot)
+    db.session.commit()
+
+    return redirect('/slots')
+
+@admin_bp.route('/delete_slot/<int:slot_id>')
+def delete_slot(slot_id):
+
+    slot = PickupSlot.query.get(slot_id)
+
+    if slot:
+        db.session.delete(slot)
+        db.session.commit()
+
+    return redirect('/slots')

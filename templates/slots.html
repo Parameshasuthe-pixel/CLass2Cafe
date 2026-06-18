@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pickup Slots Management</title>
+</head>
+<body>
+
+    <h1>Pickup Slots Management</h1>
+
+    <form method="POST" action="/add_slot">
+
+        <label>Pickup Time:</label>
+
+        <input
+            type="text"
+            name="slot_time"
+            placeholder="Example: 2:30 PM"
+            required
+        >
+
+        <button type="submit">
+            Add Slot
+        </button>
+
+    </form>
+
+    <hr>
+
+    <h2>Available Slots</h2>
+
+    <table border="1" cellpadding="10">
+
+        <tr>
+            <th>ID</th>
+            <th>Time Slot</th>
+            <th>Action</th>
+        </tr>
+
+        {% for slot in slots %}
+        <tr>
+
+            <td>{{ slot.id }}</td>
+
+            <td>{{ slot.slot_time }}</td>
+
+            <td>
+                <a href="/delete_slot/{{ slot.id }}">
+                    Delete
+                </a>
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</body>
+</html>
